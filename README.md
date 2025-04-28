@@ -1,6 +1,6 @@
 # cURL Action
 
-![GitHub Action](https://img.shields.io/github/actions/workflow/status/ChristopheClermont/curl-action/main.yml?branch=main)
+![GitHub Action](https://github.com/ChristopheClermont/curl-action/actions/workflows/test.yml/badge.svg)
 ![License](https://img.shields.io/github/license/ChristopheClermont/curl-action)
 
 A simple, lightweight GitHub Action to perform REST API calls using `curl`.
