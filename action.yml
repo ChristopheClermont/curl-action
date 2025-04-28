@@ -1,0 +1,79 @@
+name: "Generic REST Client (cURL)"
+description: "A simple GitHub Action to make REST API calls using curl."
+
+author: "Christophe"
+
+branding:
+  icon: "cloud-lightning"
+  color: "yellow"
+
+inputs:
+  url:
+    description: "The URL to call."
+    required: true
+  method:
+    description: "HTTP method to use (GET, POST, PUT, DELETE, etc.)."
+    required: true
+    default: "GET"
+  headers:
+    description: "Optional JSON string of headers."
+    required: false
+  body:
+    description: "Optional body content for POST/PUT."
+    required: false
+  timeout:
+    description: "Timeout in seconds."
+    required: false
+    default: "10"
+
+outputs:
+  status_code:
+    description: "HTTP status code returned by the server."
+    value: "${{ steps.call_api.outputs.status_code }}"
+  response_body:
+    description: "Response body from the server."
+    value: "${{ steps.call_api.outputs.response_body }}"
+
+runs:
+  using: "composite"
+  steps:
+    - id: call_api
+      shell: bash
+      run: |
+        set -e
+
+        URL="${{ inputs.url }}"
+        METHOD="${{ inputs.method }}"
+        HEADERS="${{ inputs.headers }}"
+        BODY="${{ inputs.body }}"
+        TIMEOUT="${{ inputs.timeout }}"
+
+        CURL_COMMAND="curl -s -w '%{http_code}' -o response.txt -X $METHOD"
+
+        if [ ! -z "$HEADERS" ]; then
+          for row in $(echo "${HEADERS}" | jq -r 'to_entries[] | @base64'); do
+            _jq() {
+              echo "${row}" | base64 --decode | jq -r "${1}"
+            }
+            HEADER_NAME=$(_jq '.key')
+            HEADER_VALUE=$(_jq '.value')
+            CURL_COMMAND+=" -H \"$HEADER_NAME: $HEADER_VALUE\""
+          done
+        fi
+
+        if [ ! -z "$BODY" ]; then
+          echo "$BODY" > body.json
+          CURL_COMMAND+=" -d @body.json"
+        fi
+
+        CURL_COMMAND+=" --max-time $TIMEOUT \"$URL\""
+
+        echo "Running: $CURL_COMMAND"
+
+        STATUS_CODE=$(eval $CURL_COMMAND)
+        RESPONSE_BODY=$(cat response.txt)
+
+        echo "status_code=$STATUS_CODE" >> $GITHUB_OUTPUT
+        echo "response_body<<EOF" >> $GITHUB_OUTPUT
+        echo "$RESPONSE_BODY" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
