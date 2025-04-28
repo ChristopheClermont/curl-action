@@ -19,7 +19,7 @@ jobs:
         id: test-get
         uses: ./
         with:
-          url: https://httpbin.org/get
+          url: https://postman-echo.com/get
           method: GET
 
       - name: Check GET Response
@@ -31,7 +31,7 @@ jobs:
         id: test-post
         uses: ./
         with:
-          url: https://httpbin.org/post
+          url: https://postman-echo.com/post
           method: POST
           body: '{"test": "hello"}'
           headers: '{"Content-Type": "application/json"}'
