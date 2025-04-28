@@ -1,0 +1,42 @@
+name: Test Generic REST Client Action
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test GET Request (public API)
+        id: test-get
+        uses: ./
+        with:
+          url: https://httpbin.org/get
+          method: GET
+
+      - name: Check GET Response
+        run: |
+          echo "Status: ${{ steps.test-get.outputs.status_code }}"
+          echo "Response: ${{ steps.test-get.outputs.response_body }}"
+
+      - name: Test POST Request (public API)
+        id: test-post
+        uses: ./
+        with:
+          url: https://httpbin.org/post
+          method: POST
+          body: '{"test": "hello"}'
+          headers: '{"Content-Type": "application/json"}'
+
+      - name: Check POST Response
+        run: |
+          echo "Status: ${{ steps.test-post.outputs.status_code }}"
+          echo "Response: ${{ steps.test-post.outputs.response_body }}"
